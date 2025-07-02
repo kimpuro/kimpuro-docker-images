@@ -1,0 +1,55 @@
+variables:
+  DEV_REGISTRY: dev-registry.afreecatv.com
+  PROD_REGISTRY: docker-registry.afreecatv.com
+  TEST_IMAGE: kimpuro/node20-alpine-pnpm:0.1
+
+stages:
+  - test
+  - build
+
+
+biome_check:
+  stage: test
+  image: $TEST_IMAGE
+  script:
+    - pnpm install --frozen-lockfile
+    - pnpm biome check .
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .pnpm-store
+  tags:
+    - docker
+    - aflxcombuild
+  only:
+    - merge_requests
+
+type_check:
+  stage: test
+  image: $TEST_IMAGE
+  script:
+    - pnpm install --frozen-lockfile
+    - pnpm tsc --noEmit
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .pnpm-store
+  tags:
+    - docker
+    - aflxcombuild
+  only:
+    - merge_requests
+
+build:
+  stage: build
+  script:
+    - docker build -t $PROD_REGISTRY/freecap/freecap-web:0.0.4 .
+    - docker push $PROD_REGISTRY/freecap/freecap-web:0.0.4
+  tags:
+    - puro
+  only:
+    - merge_requests
