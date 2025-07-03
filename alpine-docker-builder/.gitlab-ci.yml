@@ -5,6 +5,7 @@ variables:
 
 stages:
   - test
+  - test_build
   - image_build
 
 
@@ -24,7 +25,7 @@ biome_check:
     - docker
     - aflxcombuild
   only:
-    - dev
+    - merge_requests
 
 type_check:
   stage: test
@@ -42,7 +43,19 @@ type_check:
     - docker
     - aflxcombuild
   only:
-    - dev
+    - merge_requests
+
+test_build:
+  stage: test_build
+  image: $TEST_IMAGE
+  script:
+    - pnpm install --frozen-lockfile
+    - pnpm build
+  tags:
+    - docker
+    - aflxcombuild
+  only:
+    - merge_requests
 
 image_build:
   stage: image_build
@@ -55,4 +68,5 @@ image_build:
   tags:
     - freecap
   only:
-    - merge_requests
+    - main
+    - dev
