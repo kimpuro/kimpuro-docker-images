@@ -5,7 +5,7 @@ variables:
 
 stages:
   - test
-  - build
+  - image_build
 
 
 biome_check:
@@ -24,7 +24,7 @@ biome_check:
     - docker
     - aflxcombuild
   only:
-    - merge_requests
+    - dev
 
 type_check:
   stage: test
@@ -42,14 +42,17 @@ type_check:
     - docker
     - aflxcombuild
   only:
-    - merge_requests
+    - dev
 
-build:
-  stage: build
+image_build:
+  stage: image_build
   script:
-    - docker build -t $PROD_REGISTRY/freecap/freecap-web:0.0.4 .
-    - docker push $PROD_REGISTRY/freecap/freecap-web:0.0.4
+    - echo "$DEV_REGISTRY_PASSWORD" | docker login $DEV_REGISTRY -u $DEV_REGISTRY_USER --password-stdin
+    - docker build -t $DEV_REGISTRY/freecap/freecap-web:${CI_COMMIT_SHORT_SHA} .
+    - docker push $DEV_REGISTRY/freecap/freecap-web:${CI_COMMIT_SHORT_SHA}
+  after_script:
+    - docker logout $DEV_REGISTRY
   tags:
-    - puro
+    - freecap
   only:
     - merge_requests
