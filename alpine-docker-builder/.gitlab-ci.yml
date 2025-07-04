@@ -61,7 +61,7 @@ image_build:
   stage: image_build
   script:
     - echo "$DEV_REGISTRY_PASSWORD" | docker login $DEV_REGISTRY -u $DEV_REGISTRY_USER --password-stdin
-    - docker build -t $DEV_REGISTRY/freecap/freecap-web:${CI_COMMIT_SHORT_SHA} .
+    - docker buildx build --platform linux/amd64 -t $DEV_REGISTRY/freecap/freecap-web:${CI_COMMIT_SHORT_SHA} .
     - docker push $DEV_REGISTRY/freecap/freecap-web:${CI_COMMIT_SHORT_SHA}
   after_script:
     - docker logout $DEV_REGISTRY
